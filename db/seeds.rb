@@ -22,11 +22,10 @@ end
 def extract_all_translations(sentences)
     splits = sentences.split(".")
     if splits.length != 3 # exceptional cases - just treat everything  as "translation"
-        translation =  sentences.lstrip.strip
-        # print("\nEXCEPTION traslation!", translation)
-        return translation, nil, nil
+        meaning =  sentences.lstrip.strip
+        return meaning, nil, nil
     end
-    translation = splits[0].lstrip.strip
+    meaning = splits[0].lstrip.strip
     example = nil
     example_translation = nil
     if splits.length() >= 2
@@ -35,9 +34,7 @@ def extract_all_translations(sentences)
     if splits.length() >= 3
         example_translation = splits[2].lstrip.strip
     end
-    # print("\nsplits", splits)
-    # print("\ntranslation: ", translation, "\nexample: ", example, ";\nexample_translation:", example_translation)
-    return translation, example, example_translation
+    return meaning, example, example_translation
 end
 
 def save_entry_to_db(entry)
@@ -48,7 +45,7 @@ def save_entry_to_db(entry)
     word = sanitise(entry[0])
     pronunciation = sanitise(entry[1])
     word_type = sanitise(entry[2])
-    translation, example, example_translation = extract_all_translations(sanitise(entry[3]))
+    meaning, example, example_translation = extract_all_translations(sanitise(entry[3]))
     category_value = sanitise(entry[4])
 
     category = Category.find_or_create_by(name: category_value)
@@ -56,12 +53,13 @@ def save_entry_to_db(entry)
     entry = Entry.create(
         entry_word: word,
         word_type: word_type,
-        translation: translation,
+        meaning: meaning,
         example: example,
         example_translation: example_translation,
         categories: [category],
         pronunciation: pronunciation
     )
+    print("\n Parsed SUCCESSFULLY entry", word, "\n meaning: ", meaning, "\n example: ", example)
 
 end
 
@@ -86,7 +84,6 @@ CSV.open(csv_file, "w") do |csv|
             save_entry_to_db(actual_value)
             csv << actual_value
         end
-        print "\n\n"
         line_num += 1
     end
 end
