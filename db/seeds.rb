@@ -59,18 +59,19 @@ def save_entry_to_db(entry)
         categories: [category],
         pronunciation: pronunciation
     )
-    print("\n Parsed SUCCESSFULLY entry", word, "\n meaning: ", meaning, "\n example: ", example)
-
+    print("\n\n Parsed SUCCESSFULLY entry", word, "\n meaning: ", meaning, "\n example: ", example)
+    return true
 end
 
 File.delete(csv_file) if File.exist?(csv_file)
 line_num = 0
+success_count = 0
 
 CSV.open(csv_file, "w") do |csv|
     File.open(input_file,:encoding => 'utf-8').each do |line|
-        if line_num > 50
-            break
-        end
+        # if line_num > 50
+        #     break
+        # end
         puts "Skip line!" if (line.include? "1 •") or (line.include? "2 •")
         next if (line.include? "1 •") or (line.include? "2 •")
 
@@ -81,9 +82,11 @@ CSV.open(csv_file, "w") do |csv|
         result = line.scan(/(\S+)\W+\[(.+)\]\W+([^.]+)\.(.+)Category:\W+([^.]+)/)
         actual_value = result.first()
         if actual_value
-            save_entry_to_db(actual_value)
+            success_count += 1 if save_entry_to_db(actual_value)
             csv << actual_value
         end
         line_num += 1
     end
+
+    print("\n\nTotal success", success_count)
 end
