@@ -16,7 +16,7 @@ csv_file = "db/parsed_lexique.csv"
 ApiSweeper.disabled = true
 
 def sanitise(value)
-    return value.lstrip.strip().gsub("'", "''")
+    return value.lstrip.strip.gsub("'", "''")
 end
 
 def extract_all_translations(sentences)
