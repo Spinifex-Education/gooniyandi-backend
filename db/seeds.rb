@@ -16,7 +16,7 @@ csv_file = "db/parsed_lexique.csv"
 ApiSweeper.disabled = true
 
 def sanitise(value)
-    return value.lstrip.strip().gsub("'", "''")
+    value.strip.gsub("'", "''").gsub(160.chr("UTF-8"), "")  # Remove None-Ascii UTF-8 blank space, will not be removed by strip()
 end
 
 def extract_all_translations(sentences)
