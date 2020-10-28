@@ -59,21 +59,32 @@ def save_entry_to_db(entry)
         categories: [category],
         pronunciation: pronunciation
     )
-    print("\n\n Parsed SUCCESSFULLY entry", word, "\n meaning: ", meaning, "\n example: ", example)
+    print("\n\n Parsed SUCCESSFULLY entry:", word, "\nword type:", word_type, "\n meaning: ", meaning, "\n example: ", example, "\nCategory:", category_value, "\n")
     return true
 end
 
 File.delete(csv_file) if File.exist?(csv_file)
 line_num = 0
 success_count = 0
+shared_first_part = ""
 
 CSV.open(csv_file, "w") do |csv|
     File.open(input_file,:encoding => 'utf-8').each do |line|
-        # if line_num > 50
-        #     break
-        # end
-        puts "Skip line!" if (line.include? "1 •") or (line.include? "2 •")
-        next if (line.include? "1 •") or (line.include? "2 •")
+        if line_num > 500
+            break
+        end
+
+        if (line.include? "1 •")
+            shared_first_part = line[0, line.index("1 •")] # store first part to reuse for #2 meaning
+            line = line.gsub("1 •", "")  # continue process meaning #1 as normal
+            print("\n---------------\nProcessing 1st part >>>", line, "\n\n")
+        end
+
+        if  (line.include? "2 •")
+            line = line.gsub("2 •", "")
+            line = shared_first_part + line
+            print("\n---------------\nProcessing 2nd part >>>", line, "\n\n")
+        end
 
         if not (line.include? "Category")
             line = line.gsub("\n", "Category: None\n")
@@ -83,7 +94,10 @@ CSV.open(csv_file, "w") do |csv|
         actual_value = result.first()
         if actual_value
             success_count += 1 if save_entry_to_db(actual_value)
-            csv << actual_value
+            # csv << actual_value
+        else
+            print("\nSkip line!: ", line, " --- Actual value: ", actual_value, "\n")
+            csv << [line]
         end
         line_num += 1
     end
