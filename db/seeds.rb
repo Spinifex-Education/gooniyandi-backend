@@ -70,9 +70,9 @@ shared_first_part = ""
 
 CSV.open(csv_file, "w") do |csv|
     File.open(input_file,:encoding => 'utf-8').each do |line|
-        if line_num > 500
-            break
-        end
+        # if line_num > 500
+        #     break
+        # end
 
         if (line.include? "1 •")
             shared_first_part = line[0, line.index("1 •")] # store first part to reuse for #2 meaning
@@ -90,17 +90,20 @@ CSV.open(csv_file, "w") do |csv|
             line = line.gsub("\n", "Category: None\n")
         end
 
-        result = line.scan(/(\S+)\W+\[(.+)\]\W+([^.]+)\.(.+)Category:\W+([^.]+)/)
+        if not (line.index(/^[^.]+\[/))  # first pronunciation [ ] - no dots preceding
+            line = line.insert(line.index(/\s/) + 1, " [] ")
+        end
+
+        result = line.scan(/(\S+)\W+\[(.*)\]\W+([^.]+)\.(.+)Category:\W+([^.]+)/)
         actual_value = result.first()
         if actual_value
             success_count += 1 if save_entry_to_db(actual_value)
-            # csv << actual_value
         else
-            print("\nSkip line!: ", line, " --- Actual value: ", actual_value, "\n")
+            # print("\nSkip line!: ", line, " --- Actual value: ", actual_value, "\n")
             csv << [line]
         end
         line_num += 1
     end
 
-    print("\n\nTotal success", success_count)
+    print("\n\nTotal success: ", success_count)
 end
