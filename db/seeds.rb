@@ -37,11 +37,23 @@ def extract_all_translations(sentences)
     return meaning, example, example_translation
 end
 
-def save_entry_to_db(entry)
+def consider_to_publish(meaning, example, example_translation, category_value, added_categories)
+    if added_categories.length() <= 10
+        if meaning && example && example_translation
+            if not added_categories.include?(category_value)
+                added_categories.add(category_value)
+                return true, added_categories
+            end
+        end
+    end
+    return false, added_categories
+end
+
+def save_entry_to_db(entry, added_categories)
         # Example of an entry:
         # Bambarrwarn  	[Bam-barr-warn] nominal. Goosehole. billabong southwest of the Fitzroy Crossing Lodge. Bambarrwarn gamba goorroorla. Goosehole is a billabong.
 
-    return if (!entry)
+    return false, added_categories if (!entry)
     word = sanitise(entry[0])
     pronunciation = sanitise(entry[1])
     word_type = sanitise(entry[2])
@@ -49,7 +61,7 @@ def save_entry_to_db(entry)
     category_value = sanitise(entry[4])
 
     category = Category.find_or_create_by(name: category_value)
-
+    is_published, added_categories = consider_to_publish(meaning, example, example_translation, category_value, added_categories)
     entry = Entry.create(
         entry_word: word,
         word_type: word_type,
@@ -57,16 +69,19 @@ def save_entry_to_db(entry)
         example: example,
         example_translation: example_translation,
         categories: [category],
-        pronunciation: pronunciation
+        pronunciation: pronunciation,
+        published?: is_published
     )
-    print("\n\n Parsed SUCCESSFULLY entry:", word, "\nword type:", word_type, "\n meaning: ", meaning, "\n example: ", example, "\nCategory:", category_value, "\n")
-    return true
+    print("\n Parsed SUCCESSFULLY entry:", word, "ƒ\n")
+    # print("\n\n Parsed SUCCESSFULLY entry:", word, "\nword type:", word_type, "\n meaning: ", meaning, "\n example: ", example, "\nCategory:", category_value, "\n")
+    return true, added_categories
 end
 
 File.delete(csv_file) if File.exist?(csv_file)
 line_num = 0
 success_count = 0
 shared_first_part = ""
+added_categories = Set[]
 
 CSV.open(csv_file, "w") do |csv|
     File.open(input_file,:encoding => 'utf-8').each do |line|
@@ -97,7 +112,8 @@ CSV.open(csv_file, "w") do |csv|
         result = line.scan(/(\S+)\W+\[(.*)\]\W+([^.]+)\.(.+)Category:\W+([^.]+)/)
         actual_value = result.first()
         if actual_value
-            success_count += 1 if save_entry_to_db(actual_value)
+            status, added_categories = save_entry_to_db(actual_value, added_categories)
+            success_count += 1 if status
         else
             # print("\nSkip line!: ", line, " --- Actual value: ", actual_value, "\n")
             csv << [line]
