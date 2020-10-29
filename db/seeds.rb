@@ -71,8 +71,10 @@ def save_entry_to_db(entry, added_categories)
     # category_values = category_values_string.each {|category| Category.find_or_create_by(name: category)}
     categories = []
     for category_string in category_values_string
-        category = Category.find_or_create_by(name: category_string)
-        categories.append(category)
+        if category_string != "None"
+            category = Category.find_or_create_by(name: category_string)
+            categories.append(category)
+        end
     end
     print("categories", categories)
     is_published, added_categories = consider_to_publish(meaning, example, example_translation, category_values_string, added_categories)
