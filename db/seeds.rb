@@ -109,6 +109,7 @@ line_num = 0
 success_count = 0
 shared_first_part = ""
 added_categories = Set[]
+Category.find_or_create_by(name: 'Common Phrases')
 
 CSV.open(csv_file, "w") do |csv|
     File.open(input_file,:encoding => 'utf-8').each do |line|
