@@ -6,16 +6,14 @@ RUN bundle config --global frozen 1
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-  nodejs
+    nodejs \
+    sqlite3 \
+    libsqlite3-dev
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
 COPY . .
+RUN rake db:migrate
 
-# This is added via https://devcenter.heroku.com/articles/exec#using-with-docker
-COPY ./.profile.d /app/.profile.d
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-
-# $PORT is assigned from Heroku at deploy time
-CMD rails s -p $PORT
+CMD rails s -p 3000
