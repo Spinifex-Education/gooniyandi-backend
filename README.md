@@ -29,10 +29,19 @@ To get the server running locally asap..
 The container will run all the db migrations locally onto a `sqlite db` which is inside the container.
 This will build the container locally and run it. Go to `http://localhost:3000/` to view the admin interface.
 
-## Deployment
-The backend is a fairly vanilla Ruby on Rails application, so hosting arrangements can be whatever suits the user. The team have been using [Heroku](http://www.heroku.com) for both development/testing and production environments. Asset storage (images and audio) is configured to use [Amazon Simple Storage Service (S3)](http://aws.amazon.com/s3/) for production-like environments, and the local file system for development.
+## Production environment
+The backend is a fairly vanilla Ruby on Rails application, so hosting arrangements can be whatever suits the user. The Gooniyandi backend uses [Heroku](http://www.heroku.com) for the production environment. Asset storage (images and audio) is configured to use [Bucketeer](https://elements.heroku.com/addons/bucketeer) - a Heroku add-on that uses S3 under the hood. The database is also provisioned using the [Heroku Postgres](https://elements.heroku.com/addons/heroku-postgresql) add-on.
 
 The production environment uses [Paperclip](https://github.com/thoughtbot/paperclip) to upload the assets to S3. For each deployment environment you will have to set environment variables for the S3 bucket name, and the credentials, as outlined in **production.rb**.
+
+### Deployment
+The deployment in done via [Circle CI](https://app.circleci.com/pipelines/github/yiyili-community/gooniyandi-backend). Under the hood, it first builds the Dockerfile in the current directory and pushes the Docker image. Then, it releases the newly pushed image. Detailed information can be found here: https://devcenter.heroku.com/articles/container-registry-and-runtime
+
+### Migration
+The migration is also handled by the pipeline. If you wish to trigger it manually, you could follow the steps below:
+1. install the heroku cli (https://devcenter.heroku.com/articles/heroku-cli)
+2. run `heroku login` to authenticate
+3. run `heroku run rake db:migrate -a gooniyandi-backend`
 
 ## Customisation
 The administration console is usable out of the box with no changes. If you do make changes, **please consider submitting a pull request so the community can benefit**.
