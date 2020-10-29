@@ -7,20 +7,27 @@ The **Jila** administration console is built using [Ruby on Rails](http://rubyon
 
 ## Prerequisites
 
-- Ruby
+- `Ruby 2.1.10` (best done via a Ruby version manager eg asdf, rbenv etc..)
+- Or if you want to make life a little easier have `Docker` installed.
 
-## Installation
+## Installation & Development
 
-Install Ruby gems
+If you have Ruby running locally, Install Ruby gems
 `bundle install`
 
-## Getting Started
-
-### Development
-Launch a Rails server however you wish, see their [documentation](http://guides.rubyonrails.org/getting_started.html) if you have any particular questions. The simplest way to launch it would be to run `bundle exec rails s` which will launch a server at 'http://localhost:3000'.
-
 #### Via Docker
-Ensure you have docker installed first. Run the `scripts/run_local.sh` which will build and run the backend server using docker. It should be accessible form the same location `http://localhost:3000`.
+To get the server running locally asap..
+
+```bash
+# Build and Run the Backend
+> script/run_local.sh
+
+# Stop the backend docker container
+> docker kill admin-backend
+```
+
+The container will run all the db migrations locally onto a `sqlite db` which is inside the container.
+This will build the container locally and run it. Go to `http://localhost:3000/` to view the admin interface.
 
 ## Deployment
 The backend is a fairly vanilla Ruby on Rails application, so hosting arrangements can be whatever suits the user. The team have been using [Heroku](http://www.heroku.com) for both development/testing and production environments. Asset storage (images and audio) is configured to use [Amazon Simple Storage Service (S3)](http://aws.amazon.com/s3/) for production-like environments, and the local file system for development.
