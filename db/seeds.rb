@@ -37,7 +37,11 @@ def extract_all_translations(sentences)
     return meaning, example, example_translation
 end
 
-def consider_to_publish(meaning, example, example_translation, category_value, added_categories)
+def consider_to_publish(meaning, example, example_translation, category_values, added_categories)
+    if category_values.length() != 1
+        return false, added_categories
+    end
+    category_value = category_values[0]
     if added_categories.length() <= 10
         if meaning && example && example_translation
             if not added_categories.include?(category_value)
@@ -49,6 +53,22 @@ def consider_to_publish(meaning, example, example_translation, category_value, a
     return false, added_categories
 end
 
+def extract_categories(categories_string)
+    categories_string.split(",").each{ |x| x.strip!}
+end
+
+def clean_up_category(line)
+
+    if not (line.include? "Category")
+        line = line.gsub("\n", "Category: EmptyCategory\n")
+    end
+
+    if (line.include? "elements : c")
+        line = line.gsub("elements : c", "elements")
+    end
+    line
+end
+
 def save_entry_to_db(entry, added_categories)
         # Example of an entry:
         # Bambarrwarn  	[Bam-barr-warn] nominal. Goosehole. billabong southwest of the Fitzroy Crossing Lodge. Bambarrwarn gamba goorroorla. Goosehole is a billabong.
@@ -58,17 +78,24 @@ def save_entry_to_db(entry, added_categories)
     pronunciation = sanitise(entry[1])
     word_type = sanitise(entry[2])
     meaning, example, example_translation = extract_all_translations(sanitise(entry[3]))
-    category_value = sanitise(entry[4])
+    category_values_string = extract_categories(entry[4])
 
-    category = Category.find_or_create_by(name: category_value)
-    is_published, added_categories = consider_to_publish(meaning, example, example_translation, category_value, added_categories)
+    # category_values = category_values_string.each {|category| Category.find_or_create_by(name: category)}
+    categories = []
+    for category_string in category_values_string
+        if category_string != "EmptyCategory"
+            category = Category.find_or_create_by(name: category_string)
+            categories.append(category)
+        end
+    end
+    is_published, added_categories = consider_to_publish(meaning, example, example_translation, category_values_string, added_categories)
     entry = Entry.create(
         entry_word: word,
         word_type: word_type,
         meaning: meaning,
         example: example,
         example_translation: example_translation,
-        categories: [category],
+        categories: categories,
         pronunciation: pronunciation,
         published?: is_published
     )
@@ -101,9 +128,7 @@ CSV.open(csv_file, "w") do |csv|
             print("\n---------------\nProcessing 2nd part >>>", line, "\n\n")
         end
 
-        if not (line.include? "Category")
-            line = line.gsub("\n", "Category: None\n")
-        end
+        line = clean_up_category(line)
 
         if not (line.index(/^[^.]+\[/))  # first pronunciation [ ] - no dots preceding
             line = line.insert(line.index(/\s/) + 1, " [] ")
