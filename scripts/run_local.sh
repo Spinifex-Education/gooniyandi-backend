@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-set -eox
+set -ex
 
 #run from root of project
-docker build -t gooniyandi-backend .
+docker build -f Dockerfile.dev -t gooniyandi-backend-dev .
 
-docker run -d -p 3000:3000 gooniyandi-backend:latest
+docker run -d -p 3000:3000 --name admin-backend gooniyandi-backend-dev:latest
+
+echo "Go to http://localhost:3000/ for the local admin console."
