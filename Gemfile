@@ -34,7 +34,7 @@ gem 'newrelic_rpm'
 gem 'rspec-rails'
 
 group :development do
-  gem 'spring'	
+  gem 'spring'
 end
 
 group :development, :test do
@@ -44,4 +44,5 @@ end
 
 group :production do
   gem 'pg'
-end		
+  gem 'sendgrid-ruby'
+end
