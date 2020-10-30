@@ -43,5 +43,22 @@ The migration is also handled by the pipeline. If you wish to trigger it manuall
 2. run `heroku login` to authenticate
 3. run `heroku run rake db:migrate -a gooniyandi-backend`
 
+#### Seed initial data from Lexique
+The seeding script is in `db/seeds.rb` so that it can access the Rails context (such as database connection string and so on).
+
+The steps to run the Seeding script on the Heroku server from a clean state are:
+
+1. Reset the database (go to Database in Heroku Web Admin, and hit "Reset" button)
+2. To run migrate in the Heroku CLI: `heroku run rake db:migrate`
+2. To run seed in the Heroku CLI: `heroku run rake db:seed`
+
+#### Verify
+To verify the data has been imported successfully, check the admin backend at `http://gooniyandi-backend.herokuapp.com/admin`
+
+This step requires an Admin user (which might be removed after running db:migrate, depends on how "direction:up" is interpreted). To add the Admin user back:
+
+i) `heroku run rails c` (access the Rails Console)
+ii) In the Rails Console, run `AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password')` (the same command can be found in devise_create_admin_users.rb in `db.migrate`)
+
 ## Customisation
 The administration console is usable out of the box with no changes. If you do make changes, **please consider submitting a pull request so the community can benefit**.
